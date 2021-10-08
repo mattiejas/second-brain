@@ -4,15 +4,23 @@ import { addNote, selectNote } from "features/notes/notesSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import cn from "classnames";
+import { useHistory } from "react-router-dom";
 
 const Navigator: React.FC<{}> = () => {
+  const history = useHistory();
   const notes = useSelector((state: RootState) => state.notes.notes);
   const selectedNoteId = useSelector((state: RootState) => state.notes.currentNoteId);
   const dispatch = useDispatch();
 
+  const onNoteClick = (id: string) => {
+    dispatch(selectNote(id));
+  };
+
   useEffect(() => {
-    console.log(notes);
-  }, []);
+    if (selectedNoteId) {
+      history.push(`/notes/${selectedNoteId}`);
+    }
+  }, [selectedNoteId, history]);
 
   return (
     <div className="bg-gray-100 rounded-lg ml-10 mt-10 p-4 px-4 w-80 h-full cursor-default">
@@ -24,7 +32,7 @@ const Navigator: React.FC<{}> = () => {
             className={cn("w-full hover:bg-gray-200 rounded-md text-sm py-1 px-3 cursor-pointer", {
               "bg-gray-300 hover:bg-gray-300": note.id === selectedNoteId,
             })}
-            onClick={() => dispatch(selectNote(note.id))}
+            onClick={() => onNoteClick(note.id)}
           >
             {note.title || "New Note"}
           </li>

@@ -4,23 +4,26 @@ import EmptyEditor from "features/editor/EmptyEditor";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
 import { Provider } from "react-redux";
-import { store } from "./app/store";
+import { persistor, store } from "./app/store";
 import Navigator from "features/navigator/Navigator";
+import { PersistGate } from "redux-persist/integration/react";
 
 const App = () => {
   return (
     <Provider store={store}>
-      <Router>
-        <div className="flex">
-          <Navigator />
-          <div className="container flex-1 mx-auto">
-            <Switch>
-              <Route path="/note/:id" component={Editor} />
-              <Route exact path="/" component={EmptyEditor} />
-            </Switch>
+      <PersistGate loading={null} persistor={persistor}>
+        <Router>
+          <div className="flex">
+            <Navigator />
+            <div className="container flex-1 mx-auto">
+              <Switch>
+                <Route path="/notes/:id" component={Editor} />
+                <Route path="/" component={EmptyEditor} />
+              </Switch>
+            </div>
           </div>
-        </div>
-      </Router>
+        </Router>
+      </PersistGate>
     </Provider>
   );
 };
