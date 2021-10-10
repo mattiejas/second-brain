@@ -1,13 +1,15 @@
 import React, { useEffect, useMemo, useRef, DetailedHTMLProps } from "react";
+import cn from "classnames";
 
 interface Props {
   html: string;
   onEdit: (html: string) => void;
+  disabled?: boolean;
 }
 
 export type ContentEditableProps = DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> & Props;
 
-const ContentEditable: React.FC<ContentEditableProps> = ({ html, onEdit, className, ...props }) => {
+const ContentEditable: React.FC<ContentEditableProps> = ({ html, onEdit, className, disabled, ...props }) => {
   const target = useRef<HTMLDivElement>(null);
   const text = useMemo(() => html, []);
 
@@ -31,11 +33,11 @@ const ContentEditable: React.FC<ContentEditableProps> = ({ html, onEdit, classNa
   return (
     <div
       {...props}
-      className="outline-none cursor-text"
+      className={cn("outline-none cursor-text", className)}
       ref={target}
       onInput={emitChange}
       onBlur={emitChange}
-      contentEditable
+      contentEditable={!disabled}
       dangerouslySetInnerHTML={{ __html: text }}
     ></div>
   );
