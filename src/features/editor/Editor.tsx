@@ -10,7 +10,7 @@ import useDebounce from "./../../app/utils/debounce";
 
 const Editor = () => {
   const note = useSelector((state: RootState) => state.notes.notes.find((n) => n.id === state.notes.currentNoteId));
-  const currentNoteId = useSelector((state: RootState) => state.notes.currentNoteId);
+  const content = useSelector((state: RootState) => state.notes.notes.find((n) => n.id === state.notes.currentNoteId)?.content);
   const history = useHistory();
   const dispatch = useDispatch();
 
@@ -23,8 +23,8 @@ const Editor = () => {
   const titleEl = useRef<HTMLInputElement>(null);
   const debouncedTitle = useDebounce(title, 1000);
 
-  const [blocks, setBlocks] = useState<Block[]>(note?.content || []);
-  const debouncedBlocks = useDebounce(blocks, 200);
+  const [blocks, setBlocks] = useState<Block[]>(content || []);
+  const debouncedBlocks = useDebounce(blocks, 1000);
 
   // focus title when note new
   useEffect(() => {
@@ -34,31 +34,42 @@ const Editor = () => {
   }, [note?.content.length]);
 
   const edit = (l: string, index: number) => {
-    const newBlocks = [...blocks];
-    newBlocks[index] = {
-      type: BlockType.TEXT,
-      data: l,
-    };
-    setBlocks(newBlocks);
+    setBlocks((old) => {
+      const newBlocks = [...old];
+      newBlocks[index] = {
+        type: BlockType.TEXT,
+        data: l,
+      };
+      return newBlocks;
+    });
   };
 
-  const add = (l: string) => {
-    const newBlocks = [...blocks];
-    newBlocks.push({
-      type: BlockType.TEXT,
-      data: l,
+  const add = (l: string, index?: number) => {
+    setBlocks((old) => {
+      if (!index) index = blocks.length; // add to the end if index is not specified
+
+      const newBlocks = [
+        ...old.slice(0, index + 1),
+        {
+          type: BlockType.TEXT,
+          data: l,
+        },
+        ...old.slice(index),
+      ];
+      return newBlocks;
     });
-    setBlocks(newBlocks);
   };
 
   // update content
   useEffect(() => {
-    if (note?.title !== debouncedTitle || !note?.content.every((x, i) => debouncedBlocks[i]?.data === x.data)) {
-      console.log("updateNote", note, debouncedTitle, debouncedBlocks);
-      console.log(note?.title !== debouncedTitle, note?.content !== debouncedBlocks);
-      dispatch(updateNote({ ...note, title: debouncedTitle, content: debouncedBlocks } as Note));
+    if (
+      note &&
+      content &&
+      (note.title !== title || content.length !== blocks.length || !content.every((x, i) => blocks[i]?.data === x.data))
+    ) {
+      dispatch(updateNote({ ...note, title: title, content: blocks }));
     }
-  }, [debouncedTitle, debouncedBlocks, note, dispatch]);
+  }, [debouncedBlocks, debouncedTitle]);
 
   window.onkeypress = (e) => {
     if (e.key === "Enter") {
@@ -67,10 +78,10 @@ const Editor = () => {
         e.preventDefault();
         add("");
 
-        const el = document.getElementsByClassName("editor-line");
-        if (el && el.item(blocks.length - 1)) {
-          (el.item(blocks.length - 1) as HTMLElement).focus();
-        }
+        // const el = document.getElementsByClassName("editor-line");
+        // if (el && el.item(blocks.length - 1)) {
+        //   (el.item(blocks.length - 1) as HTMLElement).focus();
+        // }
       }
     }
   };
