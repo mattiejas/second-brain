@@ -88,7 +88,7 @@ const Editor = () => {
     }
   };
 
-  window.onkeyup = (e) => {
+  window.onkeydown = (e) => {
     if (e.key === "Backspace") {
       console.log("backspace");
       const activeEl = document.activeElement;
@@ -96,7 +96,13 @@ const Editor = () => {
         const line = activeEl as HTMLDivElement;
         const index = line.dataset.lineno ? Number.parseInt(line.dataset.lineno) : -1;
 
-        if (note && content && index < content?.length && index > -1) {
+        // prevent deletion when the user has a selection or the cursor is not at the start of the line
+        const selection = window.getSelection();
+        const range = selection?.getRangeAt(0);
+        const hasEmptySelection = range?.startOffset === range?.endOffset;
+        const isAtTheBeginningOfTheLine = range?.startOffset === 0;
+
+        if (note && content && index < content?.length && index > -1 && hasEmptySelection && isAtTheBeginningOfTheLine) {
           if (content[index].data === "") {
             dispatch(removeBlock({ id: content[index].id, noteId: note.id }));
 

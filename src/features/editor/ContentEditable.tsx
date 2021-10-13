@@ -43,4 +43,4 @@ const ContentEditable: React.FC<ContentEditableProps> = ({ html, onEdit, classNa
   );
 };
 
-export default React.memo(ContentEditable, (prevProps, nextProps) => prevProps.html === nextProps.html);
+export default ContentEditable;
