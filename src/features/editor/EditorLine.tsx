@@ -10,9 +10,10 @@ interface Props {
 
 export type EditorLineProps = Props;
 
-const EditorLine: React.FC<EditorLineProps> = ({ value, onChange, className, disabled }) => {
+const EditorLine: React.FC<EditorLineProps> = ({ value, onChange, className, disabled, ...props }) => {
   return (
     <ContentEditable
+      {...props}
       disabled={disabled}
       className={cn(className, "whitespace-nowrap overflow-hidden")}
       html={value}

@@ -4,9 +4,11 @@ import EditorLine from "./EditorLine";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "app/store";
 import { useHistory } from "react-router-dom";
-import { updateNote } from "features/notes/notesSlice";
-import { Block, BlockType, Note } from "features/notes/Note";
+import { updateNote, addBlock, editBlock, removeBlock } from "features/notes/notesSlice";
+import { Note } from "features/notes/Note";
 import useDebounce from "./../../app/utils/debounce";
+import { Block } from "features/notes/Block";
+import { BlockType } from "features/notes/BlockType";
 
 const Editor = () => {
   const note = useSelector((state: RootState) => state.notes.notes.find((n) => n.id === state.notes.currentNoteId));
@@ -21,10 +23,6 @@ const Editor = () => {
 
   const [title, setTitle] = useState(note?.title || "New Note");
   const titleEl = useRef<HTMLInputElement>(null);
-  const debouncedTitle = useDebounce(title, 1000);
-
-  const [blocks, setBlocks] = useState<Block[]>(content || []);
-  const debouncedBlocks = useDebounce(blocks, 1000);
 
   // focus title when note new
   useEffect(() => {
@@ -33,55 +31,87 @@ const Editor = () => {
     }
   }, [note?.content.length]);
 
-  const edit = (l: string, index: number) => {
-    setBlocks((old) => {
-      const newBlocks = [...old];
-      newBlocks[index] = {
-        type: BlockType.TEXT,
-        data: l,
-      };
-      return newBlocks;
-    });
+  const edit = (data: string, b: Block) => {
+    if (note) {
+      dispatch(
+        editBlock({
+          ...b,
+          data,
+        })
+      );
+    }
   };
 
   const add = (l: string, index?: number) => {
-    setBlocks((old) => {
-      if (!index) index = blocks.length; // add to the end if index is not specified
-
-      const newBlocks = [
-        ...old.slice(0, index + 1),
-        {
-          type: BlockType.TEXT,
-          data: l,
-        },
-        ...old.slice(index),
-      ];
-      return newBlocks;
-    });
+    if (note) {
+      dispatch(addBlock({ type: BlockType.TEXT, data: l, noteId: note.id, index }));
+    }
   };
 
-  // update content
+  // update title
   useEffect(() => {
-    if (
-      note &&
-      content &&
-      (note.title !== title || content.length !== blocks.length || !content.every((x, i) => blocks[i]?.data === x.data))
-    ) {
-      dispatch(updateNote({ ...note, title: title, content: blocks }));
+    if (note && note.title !== title) {
+      dispatch(updateNote({ ...note, title: title }));
     }
-  }, [debouncedBlocks, debouncedTitle]);
+  }, [title]);
 
   window.onkeypress = (e) => {
     if (e.key === "Enter") {
       const activeEl = document.activeElement;
       if (activeEl?.id === "title-input" || activeEl?.classList.contains("editor-line")) {
         e.preventDefault();
-        add("");
+        let index = content?.length ?? -1;
 
-        // const el = document.getElementsByClassName("editor-line");
-        // if (el && el.item(blocks.length - 1)) {
-        //   (el.item(blocks.length - 1) as HTMLElement).focus();
-        // }
+        // calculate index for new block
+        if (activeEl?.id === "title-input") {
+          index = -1;
+        } else {
+          const line = activeEl as HTMLDivElement;
+          index = line.dataset.lineno ? Number.parseInt(line.dataset.lineno) : index;
+        }
+
+        // add new block
+        add("", index === -1 ? 0 : index);
+        console.log(index);
+
+        // focus new block
+        setTimeout(() => {
+          const el = document.getElementsByClassName("editor-line");
+          console.log(index, el, el.item(index));
+          if (el && el.item(index + 1)) {
+            console.log("hello");
+            // content is not updated yet
+            (el.item(index + 1) as HTMLElement).focus();
+          }
+        }, 0);
+      }
+    }
+  };
+
+  window.onkeyup = (e) => {
+    if (e.key === "Backspace") {
+      console.log("backspace");
+      const activeEl = document.activeElement;
+      if (activeEl?.classList.contains("editor-line")) {
+        const line = activeEl as HTMLDivElement;
+        const index = line.dataset.lineno ? Number.parseInt(line.dataset.lineno) : -1;
+
+        if (note && content && index < content?.length && index > -1) {
+          if (content[index].data === "") {
+            dispatch(removeBlock({ id: content[index].id, noteId: note.id }));
+
+            // focus new block
+            setTimeout(() => {
+              if (content) {
+                const el = document.getElementsByClassName("editor-line");
+                if (el && el.item(index - 1)) {
+                  // content is not updated yet
+                  (el.item(index - 1) as HTMLElement).focus();
+                }
+              }
+            }, 0);
+          }
+        }
       }
     }
   };
@@ -96,15 +126,15 @@ const Editor = () => {
         onChange={(e) => setTitle(e.target.value)}
       />
       <ul className="">
-        {blocks.map((b, index) => (
+        {(content ?? []).map((b, index) => (
           <li key={index} className="flex py-1">
             <div className="mr-2 text-gray-400">{index + 1}</div>
-            <EditorLine className="editor-line w-full" value={b.data} onChange={(l) => edit(l, index)} />
+            <EditorLine className="editor-line w-full" data-lineno={index} value={b.data} onChange={(l) => edit(l, b)} />
           </li>
         ))}
-        {blocks.length === 0 && (
+        {content && content.length === 0 && (
           <li className="flex py-1">
-            <div className="mr-2 text-gray-400">{blocks.length + 1}</div>
+            <div className="mr-2 text-gray-400">{content.length + 1}</div>
             <EditorLine disabled className="text-gray-500 italic" value="Press Enter to add a new line" onChange={() => {}} />
           </li>
         )}
