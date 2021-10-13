@@ -159,6 +159,24 @@ const Editor = () => {
     }, 0);
   };
 
+  const moveUp = (e: KeyboardEvent) => {
+    const activeEl = document.activeElement;
+    if (activeEl?.classList.contains("editor-line")) {
+      const line = activeEl as HTMLDivElement;
+      const index = line.dataset.lineno ? Number.parseInt(line.dataset.lineno) : -1;
+      if (index - 1 > -1) focusLine(index - 1);
+    }
+  };
+
+  const moveDown = (e: KeyboardEvent) => {
+    const activeEl = document.activeElement;
+    if (activeEl?.classList.contains("editor-line")) {
+      const line = activeEl as HTMLDivElement;
+      const index = line.dataset.lineno ? Number.parseInt(line.dataset.lineno) : -1;
+      if (content && index < content.length) focusLine(index + 1);
+    }
+  };
+
   window.onkeydown = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
       onEnterPress(e);
@@ -166,6 +184,10 @@ const Editor = () => {
       onBackspacePress(e);
     } else if (e.key === "Delete") {
       onDeletePress(e);
+    } else if (e.key === "ArrowUp") {
+      moveUp(e);
+    } else if (e.key === "ArrowDown") {
+      moveDown(e);
     }
   };
 
