@@ -9,7 +9,6 @@ import { Note } from "features/notes/Note";
 import useDebounce from "./../../app/utils/debounce";
 import { Block } from "features/notes/Block";
 import { BlockType } from "features/notes/BlockType";
-import { createNoSubstitutionTemplateLiteral } from "typescript";
 
 const Editor = () => {
   const note = useSelector((state: RootState) => state.notes.notes.find((n) => n.id === state.notes.currentNoteId));
@@ -50,6 +49,7 @@ const Editor = () => {
   const onEnterPress = (e: KeyboardEvent) => {
     let addedElementIndex: number | null = null;
     let data = "";
+    let moveToIndex = 0;
 
     e.preventDefault();
     e.stopPropagation();
@@ -86,10 +86,60 @@ const Editor = () => {
     }
 
     // focus new block
-    if (addedElementIndex !== null) focusLine(addedElementIndex);
+    if (addedElementIndex !== null) focusLine(addedElementIndex, moveToIndex);
   };
 
-  const focusLine = (index: number) => {
+  const onBackspacePress = (e: KeyboardEvent) => {
+    const activeEl = document.activeElement;
+    if (activeEl?.classList.contains("editor-line")) {
+      const line = activeEl as HTMLDivElement;
+      const index = line.dataset.lineno ? Number.parseInt(line.dataset.lineno) : -1;
+
+      // prevent deletion when the user has a selection or the cursor is not at the start of the line
+      const selection = window.getSelection();
+      const range = selection?.getRangeAt(0);
+      const hasEmptySelection = range?.startOffset === range?.endOffset;
+      const isAtTheBeginningOfTheLine = range?.startOffset === 0;
+
+      if (note && content && index < content?.length && index > -1 && hasEmptySelection && isAtTheBeginningOfTheLine) {
+        if (content[index].data === "") {
+          dispatch(removeBlock({ id: content[index].id, noteId: note.id }));
+
+          // focus new block
+          focusLine(index - 1);
+        }
+      }
+    }
+  };
+
+  const onDeletePress = (e: KeyboardEvent) => {
+    const activeEl = document.activeElement;
+    if (activeEl?.classList.contains("editor-line")) {
+      const line = activeEl as HTMLDivElement;
+      const index = line.dataset.lineno ? Number.parseInt(line.dataset.lineno) : -1;
+
+      // prevent deletion when the user has a selection or the cursor is not at the start of the line
+      const selection = window.getSelection();
+      const range = selection?.getRangeAt(0);
+      const hasEmptySelection = range?.startOffset === range?.endOffset;
+      const isAtTheEndOfTheLine = range?.startOffset === line?.innerText.length;
+
+      if (note && content && index + 1 < content.length && index + 1 > -1 && hasEmptySelection && isAtTheEndOfTheLine) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const data = content[index].data;
+        const newData = content[index + 1].data;
+        dispatch(removeBlock({ id: content[index + 1].id, noteId: note.id }));
+        dispatch(editBlock({ ...content[index], data: data + newData }));
+
+        // focus new block
+        focusLine(index, data.length);
+      }
+    }
+  };
+
+  const focusLine = (index: number, indexToMoveCursorTo?: number) => {
     setTimeout(() => {
       const el = document.getElementsByClassName("editor-line");
       if (content && el && el.item(index)) {
@@ -102,7 +152,7 @@ const Editor = () => {
           selection?.removeAllRanges();
 
           const range = document.createRange();
-          range.setStart(item.firstChild, (item.firstChild as Text).data.length);
+          range.setStart(item.firstChild, indexToMoveCursorTo ?? (item.firstChild as Text).data.length);
           selection?.addRange(range);
         }
       }
@@ -113,27 +163,9 @@ const Editor = () => {
     if (e.key === "Enter") {
       onEnterPress(e);
     } else if (e.key === "Backspace") {
-      console.log("backspace");
-      const activeEl = document.activeElement;
-      if (activeEl?.classList.contains("editor-line")) {
-        const line = activeEl as HTMLDivElement;
-        const index = line.dataset.lineno ? Number.parseInt(line.dataset.lineno) : -1;
-
-        // prevent deletion when the user has a selection or the cursor is not at the start of the line
-        const selection = window.getSelection();
-        const range = selection?.getRangeAt(0);
-        const hasEmptySelection = range?.startOffset === range?.endOffset;
-        const isAtTheBeginningOfTheLine = range?.startOffset === 0;
-
-        if (note && content && index < content?.length && index > -1 && hasEmptySelection && isAtTheBeginningOfTheLine) {
-          if (content[index].data === "") {
-            dispatch(removeBlock({ id: content[index].id, noteId: note.id }));
-
-            // focus new block
-            focusLine(index - 1);
-          }
-        }
-      }
+      onBackspacePress(e);
+    } else if (e.key === "Delete") {
+      onDeletePress(e);
     }
   };
 
