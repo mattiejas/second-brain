@@ -16,8 +16,6 @@ const Editor = () => {
   const history = useHistory();
   const dispatch = useDispatch();
 
-  const [activeElement, setActiveElement] = useState<HTMLDivElement | null>(null);
-
   // navigate away from editor if note is not found
   if (!note) {
     history.push("/");
@@ -45,6 +43,10 @@ const Editor = () => {
       dispatch(updateNote({ ...note, title: title }));
     }
   }, [title]);
+
+  useEffect(() => {
+    if (note?.title !== title) setTitle(note?.title || "New Note");
+  }, [note?.title]);
 
   const onEnterPress = (e: KeyboardEvent) => {
     let addedElementIndex: number | null = null;

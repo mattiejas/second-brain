@@ -3,7 +3,6 @@ import cn from "classnames";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "app/store";
 import { editBlock } from "features/notes/notesSlice";
-import { FocusEventHandler, useEffect, useRef, useState } from "react";
 import React from "react";
 
 interface Props {
