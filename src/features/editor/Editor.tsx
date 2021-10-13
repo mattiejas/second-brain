@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { ReactHTML, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router";
 import EditorLine from "./EditorLine";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,12 +9,15 @@ import { Note } from "features/notes/Note";
 import useDebounce from "./../../app/utils/debounce";
 import { Block } from "features/notes/Block";
 import { BlockType } from "features/notes/BlockType";
+import { createNoSubstitutionTemplateLiteral } from "typescript";
 
 const Editor = () => {
   const note = useSelector((state: RootState) => state.notes.notes.find((n) => n.id === state.notes.currentNoteId));
   const content = useSelector((state: RootState) => state.notes.notes.find((n) => n.id === state.notes.currentNoteId)?.content);
   const history = useHistory();
   const dispatch = useDispatch();
+
+  const [activeElement, setActiveElement] = useState<HTMLDivElement | null>(null);
 
   // navigate away from editor if note is not found
   if (!note) {
@@ -44,55 +47,72 @@ const Editor = () => {
     }
   }, [title]);
 
-  window.onkeypress = (e) => {
-    if (e.key === "Enter") {
-      if (!content || content.length === 0) {
-        // listen to whole page when no line has been added yet
-        e.preventDefault();
-        add("");
-        // focus new block
-        setTimeout(() => {
-          const el = document.getElementsByClassName("editor-line");
-          if (el && el.item(0)) {
-            (el.item(0) as HTMLElement).focus();
-          }
-        }, 0);
-        return;
-      }
+  const onEnterPress = (e: KeyboardEvent) => {
+    let addedElementIndex: number | null = null;
+    let data = "";
 
+    e.preventDefault();
+    e.stopPropagation();
+
+    // listen to whole page when no line has been added yet
+    if (!content || content.length === 0) {
+      add("");
+      addedElementIndex = 0;
+    } else {
       const activeEl = document.activeElement;
       if (activeEl?.id === "title-input" || activeEl?.classList.contains("editor-line")) {
-        e.preventDefault();
         let index = content?.length ?? -1;
 
         // calculate index for new block
-        if (activeEl?.id === "title-input") {
-          index = -1;
-        } else {
+        if (activeEl?.id === "title-input") index = -1;
+        else {
           const line = activeEl as HTMLDivElement;
           index = line.dataset.lineno ? Number.parseInt(line.dataset.lineno) : index;
+
+          if (!e.shiftKey) {
+            // remove selected characters
+            let currentLine = content[index];
+            const selection = window.getSelection();
+            const range = selection?.getRangeAt(0);
+            data = content[index].data.slice(range?.endOffset); // move characters after cursor down a line
+            dispatch(editBlock({ ...content[index], data: currentLine.data.slice(0, range?.startOffset) }));
+          }
         }
 
         // add new block
-        add("", index + 1);
-        console.log(index);
-
-        // focus new block
-        setTimeout(() => {
-          const el = document.getElementsByClassName("editor-line");
-          console.log(index, el, el.item(index));
-          if (el && el.item(index + 1)) {
-            console.log("hello");
-            // content is not updated yet
-            (el.item(index + 1) as HTMLElement).focus();
-          }
-        }, 0);
+        add(data, index + 1);
+        addedElementIndex = index + 1;
       }
     }
+
+    // focus new block
+    if (addedElementIndex !== null) focusLine(addedElementIndex);
   };
 
-  window.onkeydown = (e) => {
-    if (e.key === "Backspace") {
+  const focusLine = (index: number) => {
+    setTimeout(() => {
+      const el = document.getElementsByClassName("editor-line");
+      if (content && el && el.item(index)) {
+        const item = el.item(index) as HTMLElement;
+        item.focus();
+
+        if (item.firstChild) {
+          console.log(item.firstChild);
+          const selection = window.getSelection();
+          selection?.removeAllRanges();
+
+          const range = document.createRange();
+          range.setStart(item.firstChild, (item.firstChild as Text).data.length);
+          selection?.addRange(range);
+        }
+      }
+    }, 0);
+  };
+
+  window.onkeydown = (e: KeyboardEvent) => {
+    if (e.key === "Enter") {
+      onEnterPress(e);
+    } else if (e.key === "Backspace") {
       console.log("backspace");
       const activeEl = document.activeElement;
       if (activeEl?.classList.contains("editor-line")) {
@@ -110,15 +130,7 @@ const Editor = () => {
             dispatch(removeBlock({ id: content[index].id, noteId: note.id }));
 
             // focus new block
-            setTimeout(() => {
-              if (content) {
-                const el = document.getElementsByClassName("editor-line");
-                if (el && el.item(index - 1)) {
-                  // content is not updated yet
-                  (el.item(index - 1) as HTMLElement).focus();
-                }
-              }
-            }, 0);
+            focusLine(index - 1);
           }
         }
       }
@@ -145,7 +157,6 @@ const Editor = () => {
           ))}
         {content && content.length === 0 && (
           <li className="flex py-1">
-            {/* <EditorLine disabled className="text-gray-500 italic" value="Press Enter to add a new line" onChange={() => {}} /> */}
             <span className="pl-3 text-gray-500 italic">Press enter to add a new line</span>
           </li>
         )}

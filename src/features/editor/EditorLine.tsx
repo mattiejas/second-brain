@@ -3,14 +3,12 @@ import cn from "classnames";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "app/store";
 import { editBlock } from "features/notes/notesSlice";
-import { useEffect, useRef, useState } from "react";
+import { FocusEventHandler, useEffect, useRef, useState } from "react";
 import React from "react";
 
 interface Props {
   noteId: string;
   id: string;
-  // value: string;
-  // onChange: (line: string) => void;
   className?: string;
   disabled?: boolean;
 }
