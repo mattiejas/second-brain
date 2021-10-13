@@ -31,17 +31,6 @@ const Editor = () => {
     }
   }, [note?.content.length]);
 
-  const edit = (data: string, b: Block) => {
-    if (note) {
-      dispatch(
-        editBlock({
-          ...b,
-          data,
-        })
-      );
-    }
-  };
-
   const add = (l: string, index?: number) => {
     if (note) {
       dispatch(addBlock({ type: BlockType.TEXT, data: l, noteId: note.id, index }));
@@ -57,6 +46,20 @@ const Editor = () => {
 
   window.onkeypress = (e) => {
     if (e.key === "Enter") {
+      if (!content || content.length === 0) {
+        // listen to whole page when no line has been added yet
+        e.preventDefault();
+        add("");
+        // focus new block
+        setTimeout(() => {
+          const el = document.getElementsByClassName("editor-line");
+          if (el && el.item(0)) {
+            (el.item(0) as HTMLElement).focus();
+          }
+        }, 0);
+        return;
+      }
+
       const activeEl = document.activeElement;
       if (activeEl?.id === "title-input" || activeEl?.classList.contains("editor-line")) {
         e.preventDefault();
@@ -71,7 +74,7 @@ const Editor = () => {
         }
 
         // add new block
-        add("", index === -1 ? 0 : index);
+        add("", index + 1);
         console.log(index);
 
         // focus new block
@@ -132,16 +135,18 @@ const Editor = () => {
         onChange={(e) => setTitle(e.target.value)}
       />
       <ul className="">
-        {(content ?? []).map((b, index) => (
-          <li key={index} className="flex py-1">
-            <div className="mr-2 text-gray-400">{index + 1}</div>
-            <EditorLine className="editor-line w-full" data-lineno={index} value={b.data} onChange={(l) => edit(l, b)} />
-          </li>
-        ))}
+        {note &&
+          content &&
+          content.map((b, index) => (
+            <li key={index} className="flex py-1">
+              <div className="mr-2 text-gray-400">{index + 1}</div>
+              <EditorLine noteId={note?.id} id={b.id} className="editor-line w-full" data-lineno={index} />
+            </li>
+          ))}
         {content && content.length === 0 && (
           <li className="flex py-1">
-            <div className="mr-2 text-gray-400">{content.length + 1}</div>
-            <EditorLine disabled className="text-gray-500 italic" value="Press Enter to add a new line" onChange={() => {}} />
+            {/* <EditorLine disabled className="text-gray-500 italic" value="Press Enter to add a new line" onChange={() => {}} /> */}
+            <span className="pl-3 text-gray-500 italic">Press enter to add a new line</span>
           </li>
         )}
       </ul>

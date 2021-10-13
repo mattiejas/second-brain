@@ -1,46 +1,46 @@
-import React, { useEffect, useMemo, useRef, DetailedHTMLProps } from "react";
+import React, { DetailedHTMLProps, RefObject } from "react";
 import cn from "classnames";
 
 interface Props {
-  html: string;
+  initialValue: string;
   onEdit: (html: string) => void;
   disabled?: boolean;
 }
 
 export type ContentEditableProps = DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> & Props;
 
-const ContentEditable: React.FC<ContentEditableProps> = ({ html, onEdit, className, disabled, ...props }) => {
-  const target = useRef<HTMLDivElement>(null);
-  const text = useMemo(() => html, []);
+export default class ContentEditable extends React.Component<ContentEditableProps> {
+  private target: RefObject<HTMLDivElement>;
 
-  const updateCaretPosition = () => {
-    if (target && target.current && document.activeElement === target.current) {
-      const selection = window.getSelection();
-      console.log(selection?.getRangeAt(0));
+  constructor(props: ContentEditableProps) {
+    super(props);
+    this.target = React.createRef<HTMLDivElement>();
+  }
+
+  shouldComponentUpdate(nextProps: ContentEditableProps) {
+    return nextProps.initialValue !== this.target.current?.innerHTML;
+  }
+
+  emitChange() {
+    var text = this.target?.current?.innerHTML || "";
+
+    if (this.props.onEdit) {
+      this.props.onEdit(text);
     }
-  };
+  }
 
-  const emitChange = () => {
-    var text = target?.current?.innerHTML || "";
-
-    updateCaretPosition();
-
-    if (onEdit) {
-      onEdit(text);
-    }
-  };
-
-  return (
-    <div
-      {...props}
-      className={cn("outline-none cursor-text", className)}
-      ref={target}
-      onInput={emitChange}
-      onBlur={emitChange}
-      contentEditable={!disabled}
-      dangerouslySetInnerHTML={{ __html: text }}
-    ></div>
-  );
-};
-
-export default ContentEditable;
+  render() {
+    const { className, initialValue, disabled, onEdit, ...props } = this.props;
+    return (
+      <div
+        {...props}
+        className={cn("outline-none cursor-text", className)}
+        ref={this.target}
+        onInput={() => this.emitChange()}
+        onBlur={() => this.emitChange()}
+        contentEditable={!disabled}
+        dangerouslySetInnerHTML={{ __html: initialValue }}
+      ></div>
+    );
+  }
+}
