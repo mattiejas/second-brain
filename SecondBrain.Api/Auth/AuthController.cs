@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using GraphQL;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SecondBrain.Auth;
 using SecondBrain.Business;
 using SecondBrain.Business.Auth;
+using SecondBrain.Domain;
 
 namespace SecondBrain.Api.Auth;
 
@@ -49,5 +51,12 @@ public class AuthController : ControllerBase
             return Ok(user);
         }
         return NotFound();
+    }
+
+    [GraphQLMetadata("user")]
+    public User? GetUser()
+    {
+        var id = this.User.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
+        return _userRepository.FindById(id);
     }
 }

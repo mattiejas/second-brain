@@ -41,7 +41,7 @@ namespace SecondBrain.Business.Auth
             return _tokenService.GenerateToken(user, _securityOptions.Value.Secret);
         }
 
-        public async Task<User> FindById(int id)
+        public async Task<User> FindById(string id)
         {
             return await this._userRepository.FindByIdAsync(id);
         }
