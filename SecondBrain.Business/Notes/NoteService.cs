@@ -26,4 +26,9 @@ public class NoteService
 
         return await _noteRepository.GetNotesByUserId(userId);
     }
+
+    public object? CreateNote(Note? note)
+    {
+        throw new NotImplementedException();
+    }
 }

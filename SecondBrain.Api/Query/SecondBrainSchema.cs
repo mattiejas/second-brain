@@ -13,6 +13,7 @@ namespace SecondBrain.Api
             this.RegisterTypeMapping<Block, BlockType>();
             this.RegisterTypeMapping<BlockData, BlockDataEnum>();
             this.RegisterTypeMapping<Note, NoteType>();
+            this.RegisterTypeMapping<Note, NoteInputType>();
 
             Query = provider.GetRequiredService<SecondBrainQuery>();
             // Mutation = provider.GetRequiredService<SecondBrainMutation>();

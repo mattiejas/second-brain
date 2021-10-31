@@ -18,6 +18,7 @@ public static class ServicesConfiguration
 
         services.AddScoped<UserType>();
         services.AddScoped<NoteType>();
+        services.AddScoped<NoteInputType>();
         services.AddScoped<BlockType>();
         services.AddScoped<BlockDataEnum>();
 
