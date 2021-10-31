@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using SecondBrain.Auth;
 using SecondBrain.Business.Auth;
+using SecondBrain.Business.Notes;
 using SecondBrain.DataAccessLayer.Repositories;
 using SecondBrain.Domain;
 
@@ -16,5 +17,6 @@ public static class ServicesConfiguration
         // Auth
         services.AddScoped<TokenService>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<INoteRepository, NoteRepository>();
     }
 }

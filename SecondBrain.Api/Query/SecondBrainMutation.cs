@@ -4,5 +4,9 @@ namespace SecondBrain.Api
 {
     public class SecondBrainMutation : ObjectGraphType
     {
+        public SecondBrainMutation()
+        {
+
+        }
     }
 }
