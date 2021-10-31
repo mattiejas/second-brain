@@ -14,7 +14,7 @@ using SecondBrain.Domain;
 namespace SecondBrain.Api.Auth;
 
 [ApiController]
-[Route("auth")]
+[Route("/api/auth")]
 public class AuthController : ControllerBase
 {
     private readonly ILogger _logger;
@@ -51,12 +51,5 @@ public class AuthController : ControllerBase
             return Ok(user);
         }
         return NotFound();
-    }
-
-    [GraphQLMetadata("user")]
-    public User? GetUser()
-    {
-        var id = this.User.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
-        return _userRepository.FindById(id);
     }
 }

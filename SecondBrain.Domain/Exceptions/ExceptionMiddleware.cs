@@ -4,12 +4,12 @@ using Microsoft.Extensions.Logging;
 
 namespace SecondBrain.Domain.Exceptions;
 
-public class HttpExceptionMiddleware
+public class ExceptionMiddleware
 {
     private readonly RequestDelegate next;
     private readonly ILogger logger;
 
-    public HttpExceptionMiddleware(RequestDelegate next, ILogger<HttpExceptionMiddleware> logger)
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
     {
         this.next = next;
         this.logger = logger;
@@ -21,11 +21,14 @@ public class HttpExceptionMiddleware
         {
             await this.next.Invoke(context);
         }
-        catch (HttpException httpException)
+        catch (Exception e)
         {
-            context.Response.StatusCode = httpException.StatusCode;
-            var responseFeature = context.Features.Get<IHttpResponseFeature>();
-            responseFeature.ReasonPhrase = httpException.Message;
+            if (e is not HttpException)
+            {
+                this.logger.LogError($"Something went wrong: {e}");
+                context.Response.StatusCode = (int)StatusCodes.Status500InternalServerError;
+            }
         }
     }
 }
+

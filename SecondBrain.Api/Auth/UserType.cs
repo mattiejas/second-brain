@@ -7,7 +7,7 @@ namespace SecondBrain.Api.Auth
     {
         public UserType()
         {
-            Field<NonNullGraphType<IdGraphType>>("id");
+            Field(x => x.Id);
             Field(x => x.Email);
             Field(x => x.DisplayName);
         }

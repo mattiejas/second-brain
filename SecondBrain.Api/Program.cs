@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text;
+using GraphQL.MicrosoftDI;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -13,7 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddApi();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
@@ -81,6 +83,13 @@ builder.Services.AddAuthorization()
 // DI
 builder.Services.AddDAL();
 builder.Services.AddBusiness();
+
+// Logging
+builder.Host.ConfigureLogging((hostingContext, logging) =>
+{
+    logging.ClearProviders();
+    logging.AddConsole();
+});
 
 var app = builder.Build();
 
