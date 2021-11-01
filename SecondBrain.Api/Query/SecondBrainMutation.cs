@@ -1,6 +1,7 @@
 using GraphQL;
 using GraphQL.Types;
 using SecondBrain.Api.Notes;
+using SecondBrain.Api.Query;
 using SecondBrain.Business.Notes;
 using SecondBrain.Domain;
 
@@ -13,12 +14,12 @@ namespace SecondBrain.Api
             Field<NoteType>(
                   "createNote",
                   arguments: new QueryArguments(
-                    new QueryArgument<NonNullGraphType<NoteInputType>> { Name = "note" }
+                    new QueryArgument<NonNullGraphType<NoteInputType>> { Name = "note", Description = "The note you want to create." }
                   ),
                   resolve: context =>
                   {
-                      var note = context.GetArgument<Note>("note");
-                      return noteService.CreateNote(note);
+                      var note = context.GetArgument<CreateNoteDto>("note");
+                      return noteService.CreateNote(note, (context.UserContext as QueryUserContext).UserId);
                   });
         }
     }

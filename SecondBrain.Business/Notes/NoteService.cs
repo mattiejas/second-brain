@@ -27,8 +27,16 @@ public class NoteService
         return await _noteRepository.GetNotesByUserId(userId);
     }
 
-    public object? CreateNote(Note? note)
+    public Note? CreateNote(CreateNoteDto note, string userId)
     {
-        throw new NotImplementedException();
+        var entity = new Note
+        {
+            Title = note.Title,
+            AuthorId = userId
+        };
+
+        _noteRepository.Insert(entity);
+        _noteRepository.Save();
+        return entity;
     }
 }
