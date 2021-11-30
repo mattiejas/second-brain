@@ -1,4 +1,6 @@
 using GraphQL.Types;
+using SecondBrain.Api.Auth;
+using SecondBrain.Api.Blocks;
 using SecondBrain.Domain;
 
 namespace SecondBrain.Api.Notes
@@ -11,9 +13,9 @@ namespace SecondBrain.Api.Notes
             Field(x => x.UpdatedAt);
             Field(x => x.CreatedAt);
             Field(x => x.Title);
-            Field(x => x.Content);
-            Field<NoteType>("Author");
-            Field<IdGraphType>("AuthorId");
+            Field<ListGraphType<BlockType>>("content");
+            Field<UserType>("author");
+            Field<IdGraphType>("authorId");
         }
     }
 }

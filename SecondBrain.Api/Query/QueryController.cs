@@ -42,7 +42,7 @@ namespace SecondBrain.Api.Query
             {
                 _.Schema = _schema;
                 _.Query = query.Query;
-                _.Inputs = query.Variables.ToInputs();
+                _.Inputs = query.Variables?.ToInputs() ?? new Inputs(new Dictionary<string, object>());
                 _.UserContext = new QueryUserContext(this.User);
             });
 

@@ -10,5 +10,5 @@ public class QueryDto
     public string? Query { get; set; } = String.Empty;
 
     [JsonConverter(typeof(GraphQL.SystemTextJson.ObjectDictionaryConverter))]
-    public Dictionary<string, object> Variables { get; set; }
+    public Dictionary<string, object>? Variables { get; set; }
 }
