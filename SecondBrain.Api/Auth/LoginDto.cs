@@ -2,12 +2,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SecondBrain.Api.Auth
 {
-    public class LoginDto
-    {
-        [Required]
-        public string Email { get; set; }
+  public class LoginDto
+  {
+    [Required]
+    public string Email { get; set; } = "";
 
-        [Required]
-        public string Password { get; set; }
-    }
+    [Required]
+    public string Password { get; set; } = "";
+  }
 }

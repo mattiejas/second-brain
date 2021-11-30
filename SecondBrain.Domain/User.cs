@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿namespace SecondBrain.Domain;
 
-namespace SecondBrain.Domain;
+using Microsoft.AspNetCore.Identity;
+
 public class User : IdentityUser
 {
-    public string DisplayName { get; set; } = "";
+  public string DisplayName { get; set; } = "";
 }

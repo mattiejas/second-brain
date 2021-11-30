@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SecondBrain.Domain\SecondBrain.Domain.csproj" />
-    <ProjectReference Include="..\SecondBrain.Business\SecondBrain.Business.csproj" />
   </ItemGroup>
 
   <ItemGroup>

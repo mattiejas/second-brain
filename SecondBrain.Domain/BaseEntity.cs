@@ -1,9 +1,8 @@
-namespace SecondBrain.Domain
+namespace SecondBrain.Domain;
+
+public class BaseEntity
 {
-  public class BaseEntity
-  {
-    public int Id { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
-  }
+  public int Id { get; set; }
+  public DateTime CreatedAt { get; set; }
+  public DateTime UpdatedAt { get; set; }
 }

@@ -1,20 +1,17 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using SecondBrain.Auth;
-using SecondBrain.Business.Auth;
 using SecondBrain.DataAccessLayer.Repositories;
-using SecondBrain.Domain;
+using SecondBrain.Domain.Auth;
 
 namespace SecondBrain.DataAccessLayer;
 
 public static class ServicesConfiguration
 {
-    public static void AddDAL(this IServiceCollection services)
-    {
-        services.AddEntityFrameworkSqlite().AddDbContext<BrainContext>();
+  public static void AddDAL(this IServiceCollection services)
+  {
+    services.AddEntityFrameworkSqlite().AddDbContext<BrainContext>();
 
-        // Auth
-        services.AddScoped<TokenService>();
-        services.AddScoped<IUserRepository, UserRepository>();
-    }
+    // Auth
+    services.AddScoped<TokenService>();
+    services.AddScoped<IUserRepository, UserRepository>();
+  }
 }
